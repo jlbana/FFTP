@@ -29,7 +29,6 @@ bool fftp_init (char *ip, unsigned short port)
 	serverAddr.sin_port	= htons(port);
 
 	status = inet_aton(ip, &serverAddr.sin_addr);
-
 	if (status == 0)
 	{
 		fputs("Incorrect IP supplied", stdout);
@@ -47,19 +46,13 @@ bool fftp_init (char *ip, unsigned short port)
 		fftp_error("socket()", true);
 	}
 
-	status = bind(
-	serverFd,
-	(struct sockaddr *) &serverAddr,
-	sizeof(serverAddr)
-	);
-
+	status = bind(serverFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
 	if ( status == -1)
 	{
 		fftp_error("bind()", true);
 	}
 
 	status = listen(serverFd, NALLOWED);
-
 	if( status == -1)
 	{
 		fftp_error("listen()", true);
