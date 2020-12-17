@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -12,9 +13,21 @@
 FILE    *fLog;          /* Handle to Log file */
 int     serverFd;       /* Server Socket Identifier */
 
+void fftp_deinit (int signal)
+{
+	close(serverFd);
+}
+
+void fftp_loop(void)
+{
+	while (true)
+	{ }
+}
+
 bool fftp_init (char *ip, unsigned short port)
 {
 	struct	sockaddr_in serverAddr;
+	struct	sigaction action;
 	int	status;
 
 	fLog = fopen(LOG_FILE, "a");
@@ -32,7 +45,7 @@ bool fftp_init (char *ip, unsigned short port)
 	if (status == 0)
 	{
 		fputs("Incorrect IP supplied", stdout);
-		exit(0);
+		exit(EXIT_FAILURE);
 	}
 
 	serverFd = socket(
@@ -47,18 +60,22 @@ bool fftp_init (char *ip, unsigned short port)
 	}
 
 	status = bind(serverFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
-	if ( status == -1)
+	if (status == -1)
 	{
 		fftp_error("bind()", true);
 	}
 
 	status = listen(serverFd, NALLOWED);
-	if( status == -1)
+	if (status == -1)
 	{
 		fftp_error("listen()", true);
 	}
 
+	memset(&action, 0, sizeof action);
+	action.sa_handler = fftp_deinit;
+	sigaction(SIGINT, &action, NULL);
 
-	close(serverFd);
+	fftp_loop();
+
 	return true;
 }

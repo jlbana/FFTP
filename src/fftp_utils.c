@@ -17,5 +17,5 @@ void fftp_error(char *message, bool terminate)
 	perror(message);
 
 	if (terminate)
-		exit(0);
+		exit(EXIT_FAILURE);
 }
