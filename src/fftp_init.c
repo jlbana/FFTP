@@ -2,7 +2,9 @@
 #include "fftp_utils.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -16,10 +18,9 @@ bool fftp_init (char *ip, unsigned short port)
 	int	status;
 
 	fLog = fopen(LOG_FILE, "a");
-
 	if (fLog == NULL)
 	{
-		fftp_error("Opening log file failed", true);
+		fftp_error("fopen()", true);
 	}
 
 	memset(&serverAddr, 0, sizeof(struct sockaddr_in));
@@ -27,10 +28,10 @@ bool fftp_init (char *ip, unsigned short port)
 	serverAddr.sin_port	= htons(port);
 
 	status = inet_aton(ip, &serverAddr.sin_addr);
-
 	if (status == 0)
 	{
-		fftp_error("Incorrect IP supplied", true);
+		fputs("Incorrect IP supplied", stdout);
+		exit(0);
 	}
 
 	serverFd = socket(
@@ -38,13 +39,28 @@ bool fftp_init (char *ip, unsigned short port)
 	SOCK_STREAM,
 	IPPROTO_TCP
 	);
-
 	if (serverFd < 0)
 	{
-		fftp_error("Socket creation failed", true);
+		fftp_error("socket()", true);
 	}
 
-	
+	status = bind(
+	serverFd,
+	(struct sockaddr *) &serverAddr,
+	sizeof(serverAddr)
+	);
+	if ( status == -1)
+	{
+		fftp_error("bind()", true);
+	}
 
+	status = listen(serverFd, NALLOWED);
+	if( status == -1)
+	{
+		fftp_error("listen()", true);
+	}
+
+
+	close(serverFd);
 	return true;
 }

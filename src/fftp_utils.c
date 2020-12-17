@@ -12,14 +12,9 @@ int fftp_file_exists(char * fileName)
         return 1;
 }
 
-char *fftp_get_error()
-{
-	return strerror(errno);
-}
-
 void fftp_error(char *message, bool terminate)
 {
-	fprintf(stdout, "%s (%s)\n", message, fftp_get_error());
+	perror(message);
 
 	if (terminate)
 		exit(0);
