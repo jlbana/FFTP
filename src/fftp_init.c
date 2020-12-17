@@ -16,12 +16,14 @@ int     serverFd;       /* Server Socket Identifier */
 void fftp_deinit (int signal)
 {
 	close(serverFd);
+	exit(EXIT_SUCCESS);
 }
 
 void fftp_loop(void)
 {
 	while (true)
-	{ }
+	{
+	}
 }
 
 bool fftp_init (char *ip, unsigned short port)
