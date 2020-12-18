@@ -15,8 +15,10 @@ struct Connection
 	unsigned short	nQueries;	/* Query Counter */
 	enum dMode	dataMode;	/* Passive/Active Transfer */
 	struct sockaddr_in *clientAddr;	/* Client IPv4 Address */
+	short		uid, gid;	/* Client Permissions */
 };
 
 void fftp_log_connection(struct Connection *);
+struct Connection *fftp_new_connection();
 
 #endif

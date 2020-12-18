@@ -15,14 +15,28 @@ int     serverFd;       /* Server Socket Identifier */
 
 void fftp_deinit (int signal)
 {
+	fputs("Terminating..", stdout);
 	close(serverFd);
 	exit(EXIT_SUCCESS);
 }
 
 void fftp_loop(void)
 {
+	int clientFd;
+	int szStruct;
+
 	while (true)
 	{
+		struct Connection *conn = new_fftp_connection();
+		szStruct = sizeof(struct sockaddr_in);
+
+		clientFd = accept(
+		serverFd,
+		(struct sockaddr *) conn->clientAddr,
+		&szStruct);
+
+
+		break;
 	}
 }
 
@@ -30,7 +44,6 @@ bool fftp_init (char *ip, unsigned short port)
 {
 	struct	sockaddr_in serverAddr;
 	struct	sigaction action;
-	int	status;
 
 	fLog = fopen(LOG_FILE, "a");
 
@@ -43,8 +56,7 @@ bool fftp_init (char *ip, unsigned short port)
 	serverAddr.sin_family	= AF_INET;
 	serverAddr.sin_port	= htons(port);
 
-	status = inet_aton(ip, &serverAddr.sin_addr);
-	if (status == 0)
+	if( inet_aton(ip, &serverAddr.sin_addr) == 0)
 	{
 		fputs("Incorrect IP supplied", stdout);
 		exit(EXIT_FAILURE);
@@ -61,14 +73,15 @@ bool fftp_init (char *ip, unsigned short port)
 		fftp_error("socket()", true);
 	}
 
-	status = bind(serverFd, (struct sockaddr *) &serverAddr, sizeof(serverAddr));
-	if (status == -1)
+	if (bind(
+	serverFd,
+	(struct sockaddr *) &serverAddr,
+	sizeof(serverAddr)) == -1)
 	{
 		fftp_error("bind()", true);
 	}
 
-	status = listen(serverFd, NALLOWED);
-	if (status == -1)
+	if (listen(serverFd, NMAXQUEUE) == -1)
 	{
 		fftp_error("listen()", true);
 	}
