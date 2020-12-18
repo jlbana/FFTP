@@ -60,7 +60,7 @@ void fftp_loop(void)
 	}
 }
 
-bool fftp_init (char *ip, unsigned short port)
+void fftp_init (char *ip, unsigned short port)
 {
 	struct	sockaddr_in serverAddr;
 	struct	sigaction action;
@@ -111,6 +111,4 @@ bool fftp_init (char *ip, unsigned short port)
 	sigaction(SIGINT, &action, NULL);
 
 	fftp_loop();
-
-	return true;
 }

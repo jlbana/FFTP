@@ -6,6 +6,6 @@
 
 #include <stdbool.h>
 
-bool fftp_init(char *, unsigned short);
+void fftp_init(char *, unsigned short);
 
 #endif
