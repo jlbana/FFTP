@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
 	struct arguments arguments;
 
 	memset(&arguments, 0, sizeof(arguments));
-	arguments.port = htons(21);
+	arguments.ip	= "0.0.0.0";
+	arguments.port	= 21;
 
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
 

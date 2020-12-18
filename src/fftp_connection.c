@@ -11,9 +11,9 @@
 extern FILE	*fLog;
 
 pthread_mutex_t	countLock;	/* Mutex for TC */
-unsigned int	nThreads = 0;	/* Thread count */
+int		nThreads = 0;	/* Thread count */
 
-static void fftp_add_count(int value)
+void fftp_add_count(int value)
 {
 	pthread_mutex_lock(&countLock);
 	nThreads += value;
@@ -55,12 +55,12 @@ void *fftp_handle_connection(void *arg)
 	int	status, clientFd = conn->clientFd;
 	char	buf[256];
 
-
-	while( (status = read(clientFd,
+	while( (status = read(
+	clientFd,
 	buf,
-	sizeof(buf))) >= 0)
+	sizeof buf)) > 0)
 	{
-
+		// Parsing
 	}
 
 	fftp_free_connection(conn);

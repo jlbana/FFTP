@@ -14,8 +14,7 @@
 
 FILE    *fLog;          /* Handle to Log file */
 int     serverFd;       /* Server Socket Identifier */
-
-extern unsigned int nThreads;
+extern int nThreads;	/* Thread Count */
 
 void fftp_deinit (int signal)
 {
@@ -27,12 +26,13 @@ void fftp_deinit (int signal)
 void fftp_loop(void)
 {
 	struct	Connection *conn;
-	int	clientFd, szStruct;
+	int	clientFd;
+	socklen_t szStruct;
 	pthread_t th;
 
 	while (true)
 	{
-		if (nThreads > 4)
+		if (nThreads > NMAXQUEUE)
 			continue;
 
 		conn = fftp_new_connection();
@@ -49,6 +49,7 @@ void fftp_loop(void)
 			continue;
 		}
 
+		conn->clientFd = clientFd;
 		fftp_log_connection(conn);
 		fftp_add_count(1);
 
