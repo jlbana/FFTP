@@ -18,6 +18,9 @@ struct Connection
 	short		uid, gid;	/* Client Permissions */
 };
 
+void fftp_add_count(int);
+int  fftp_get_count();
+
 struct Connection *fftp_new_connection();
 void fftp_free_connection(struct Connection *);
 void fftp_log_connection(struct Connection *);

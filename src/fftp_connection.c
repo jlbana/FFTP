@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <stdbool.h>
 #include <pthread.h>
 #include <arpa/inet.h>
@@ -12,10 +13,10 @@ extern FILE	*fLog;
 pthread_mutex_t	countLock;	/* Mutex for TC */
 unsigned int	nThreads = 0;	/* Thread count */
 
-static void fftp_dec_count()
+static void fftp_add_count(int value)
 {
 	pthread_mutex_lock(&countLock);
-	nThreads--;
+	nThreads += value;
 	pthread_mutex_unlock(&countLock);
 }
 
@@ -57,12 +58,12 @@ void *fftp_handle_connection(void *arg)
 
 	while( (status = read(clientFd,
 	buf,
-	sizeof(buf)) >= 0)
+	sizeof(buf))) >= 0)
 	{
 
 	}
 
 	fftp_free_connection(conn);
-	fftp_dec_count();
+	fftp_add_count(-1);
 	return NULL;
 }

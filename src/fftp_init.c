@@ -15,6 +15,7 @@
 FILE    *fLog;          /* Handle to Log file */
 int     serverFd;       /* Server Socket Identifier */
 
+extern unsigned int nThreads;
 
 void fftp_deinit (int signal)
 {
@@ -27,10 +28,14 @@ void fftp_loop(void)
 {
 	struct	Connection *conn;
 	int	clientFd, szStruct;
+	pthread_t th;
 
 	while (true)
 	{
-		conn = new_fftp_connection();
+		if (nThreads > 4)
+			continue;
+
+		conn = fftp_new_connection();
 		szStruct = sizeof(struct sockaddr_in);
 
 		clientFd = accept(
@@ -45,14 +50,13 @@ void fftp_loop(void)
 		}
 
 		fftp_log_connection(conn);
+		fftp_add_count(1);
 
 		pthread_create(
 		&th,
 		NULL,
 		fftp_handle_connection,
 		conn);
-
-		break;
 	}
 }
 
