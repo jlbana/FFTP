@@ -1,17 +1,20 @@
 #include "fftp_init.h"
 #include "fftp_utils.h"
+#include "fftp_connection.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 
 FILE    *fLog;          /* Handle to Log file */
 int     serverFd;       /* Server Socket Identifier */
+
 
 void fftp_deinit (int signal)
 {
@@ -22,12 +25,12 @@ void fftp_deinit (int signal)
 
 void fftp_loop(void)
 {
-	int clientFd;
-	int szStruct;
+	struct	Connection *conn;
+	int	clientFd, szStruct;
 
 	while (true)
 	{
-		struct Connection *conn = new_fftp_connection();
+		conn = new_fftp_connection();
 		szStruct = sizeof(struct sockaddr_in);
 
 		clientFd = accept(
@@ -35,6 +38,19 @@ void fftp_loop(void)
 		(struct sockaddr *) conn->clientAddr,
 		&szStruct);
 
+		if (clientFd == -1)
+		{
+			fftp_free_connection(conn);
+			continue;
+		}
+
+		fftp_log_connection(conn);
+
+		pthread_create(
+		&th,
+		NULL,
+		fftp_handle_connection,
+		conn);
 
 		break;
 	}

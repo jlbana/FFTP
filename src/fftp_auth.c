@@ -8,6 +8,7 @@
 bool _fftp_auth_verify(char *username, char *password)
 {
 	struct spwd *entry = getspnam(username);
+
 	if (entry == NULL)
 	{
 		return false;
