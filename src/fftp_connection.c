@@ -1,4 +1,5 @@
 #include "fftp_connection.h"
+#include "fftp_parse.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,11 @@ void fftp_add_count(int value)
 	pthread_mutex_unlock(&countLock);
 }
 
+int fftp_get_count()
+{
+	return nThreads;
+}
+
 void fftp_log_connection(struct Connection *conn)
 {
 	struct	sockaddr_in *clientAddr = conn->clientAddr;
@@ -29,7 +35,8 @@ void fftp_log_connection(struct Connection *conn)
 	ip	= inet_ntoa(clientAddr->sin_addr);
 	port	= ntohs(clientAddr->sin_port);
 
-	fprintf(fLog, "Connection from %s:%d\n", ip, port);
+	fprintf(fLog, "[%d] Connection from %s:%d\n", conn->clientFd, ip, port);
+	fflush(fLog);
 }
 
 struct Connection *fftp_new_connection()
@@ -45,6 +52,10 @@ struct Connection *fftp_new_connection()
 
 void fftp_free_connection(struct Connection *conn)
 {
+	fftp_add_count(-1);
+	fprintf(fLog, "[%d] Connection terminated\n", conn->clientFd);
+	fflush(fLog);
+
 	free(conn->clientAddr);
 	free(conn);
 }
@@ -52,18 +63,41 @@ void fftp_free_connection(struct Connection *conn)
 void *fftp_handle_connection(void *arg)
 {
 	struct	Connection *conn = arg;
+	struct	Command *command = malloc(sizeof(struct Command));
 	int	status, clientFd = conn->clientFd;
-	char	buf[256];
+	char	buf[256], *end;
+
 
 	while( (status = read(
 	clientFd,
 	buf,
 	sizeof buf)) > 0)
 	{
-		// Parsing
+		end = strchr(buf, '\n');
+		if (end != NULL) *end = 0;
+
+		fftp_parse_command(buf, command);
+
+		switch (command->operation)
+		{
+		case 0:
+			dprintf(
+			clientFd,
+			"USER issued with arguments: %s\n",
+			command->arguments);
+			break;
+		case 1:
+			dprintf(
+			clientFd,
+			"PASS issued with arguments: %s\n",
+			command->arguments);
+			break;
+		default:
+			dprintf(clientFd, "No idea?\n");
+			break;
+		}
 	}
 
 	fftp_free_connection(conn);
-	fftp_add_count(-1);
 	return NULL;
 }

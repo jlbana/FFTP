@@ -18,12 +18,11 @@ bool fftp_parse_command(char *input, struct Command *command)
 	command->operation = -1;
 
 	separator = strchr(input, ' ');
-	if (separator == NULL)
+	if (separator != NULL)
 	{
-		return false;
+		command->arguments = separator + 1;
+		*separator = 0;
 	}
-	command->arguments = separator + 1;
-	*separator = 0;
 
 	for(i = 0; i < NCMDS; i++)
 	{

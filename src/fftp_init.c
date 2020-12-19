@@ -14,11 +14,10 @@
 
 FILE    *fLog;          /* Handle to Log file */
 int     serverFd;       /* Server Socket Identifier */
-extern int nThreads;	/* Thread Count */
 
 void fftp_deinit (int signal)
 {
-	fputs("Terminating..", stdout);
+	fputs("Terminating..\n", stdout);
 	close(serverFd);
 	exit(EXIT_SUCCESS);
 }
@@ -32,7 +31,7 @@ void fftp_loop(void)
 
 	while (true)
 	{
-		if (nThreads > NMAXQUEUE)
+		if (fftp_get_count() > NMAXQUEUE)
 			continue;
 
 		conn = fftp_new_connection();
@@ -79,7 +78,7 @@ void fftp_init (char *ip, unsigned short port)
 
 	if( inet_aton(ip, &serverAddr.sin_addr) == 0)
 	{
-		fputs("Incorrect IP supplied", stdout);
+		fputs("Can't parse IP\n", stdout);
 		exit(EXIT_FAILURE);
 	}
 
