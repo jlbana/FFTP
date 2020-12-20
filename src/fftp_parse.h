@@ -8,7 +8,7 @@
 struct Command
 {
 	int	operation;
-	char	*arguments;
+	char	*argument;
 };
 
 bool fftp_parse_command(char *, struct Command *);

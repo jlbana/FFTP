@@ -11,11 +11,12 @@ enum dMode {
 
 struct Connection
 {
-	int		clientFd;	/* Client Socket Identifier */
-	unsigned short	nQueries;	/* Query Counter */
-	enum dMode	dataMode;	/* Passive/Active Transfer */
+	int		 clientFd;	/* Client Socket Identifier */
+	unsigned short	 nQueries;	/* Query Counter */
+	enum dMode	 dataMode;	/* Passive/Active Transfer */
 	struct sockaddr_in *clientAddr;	/* Client IPv4 Address */
-	short		uid, gid;	/* Client Permissions */
+	short		 uid, gid;	/* Client Permissions */
+	char		*username;	/* Client Username */
 };
 
 void fftp_add_count(int);

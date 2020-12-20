@@ -20,7 +20,7 @@ bool fftp_parse_command(char *input, struct Command *command)
 	separator = strchr(input, ' ');
 	if (separator != NULL)
 	{
-		command->arguments = separator + 1;
+		command->argument = separator + 1;
 		*separator = 0;
 	}
 

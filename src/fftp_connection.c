@@ -1,5 +1,6 @@
 #include "fftp_connection.h"
 #include "fftp_parse.h"
+#include "fftp_auth.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +68,7 @@ void *fftp_handle_connection(void *arg)
 	int	status, clientFd = conn->clientFd;
 	char	buf[256], *end;
 
+	dprintf(clientFd, ">> ");
 
 	while( (status = read(
 	clientFd,
@@ -78,26 +80,59 @@ void *fftp_handle_connection(void *arg)
 
 		fftp_parse_command(buf, command);
 
+		if (IS_LOGGED(conn) &&
+		( command->operation == 0 || command->operation == 1 ))
+		{
+			goto resume;
+		}
+
 		switch (command->operation)
 		{
 		case 0:
+		{
+			char *arg = command->argument;
 			dprintf(
 			clientFd,
-			"USER issued with arguments: %s\n",
-			command->arguments);
+			"USER issued with argument: %s\n",
+			arg);
+
+			if ( arg != NULL && strlen(arg))
+			{
+				if (conn->username)
+					free(conn->username);
+				conn->username = strdup(arg);
+			}
 			break;
+		}
 		case 1:
 			dprintf(
 			clientFd,
-			"PASS issued with arguments: %s\n",
-			command->arguments);
+			"PASS issued with argument: %s\n",
+			command->argument);
+
+			if (conn->username != NULL && command->argument)
+			{
+				if(! fftp_auth_verify(
+				conn,
+				command->argument))
+				{
+				free(conn->username);
+				conn->username = NULL;
+				}
+			}
 			break;
 		default:
 			dprintf(clientFd, "No idea?\n");
 			break;
 		}
+	resume:
+		if (IS_LOGGED(conn))
+			dprintf(clientFd, "(%d) >> ", conn->uid);
+		else
+			dprintf(clientFd, ">> ");
 	}
 
 	fftp_free_connection(conn);
+	free(command);
 	return NULL;
 }
