@@ -19,3 +19,12 @@ void fftp_error(char *message, bool terminate)
 	if (terminate)
 		exit(EXIT_FAILURE);
 }
+
+void fftp_message(int clientFd, int status, char *message)
+{
+	dprintf(
+	clientFd,
+	"%d %s\r\n",
+	status,
+	message);
+}

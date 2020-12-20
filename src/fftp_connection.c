@@ -68,8 +68,7 @@ void *fftp_handle_connection(void *arg)
 	int	status, clientFd = conn->clientFd;
 	char	buf[256], *end;
 
-	dprintf(clientFd, "%d FFTP\r\n", 220);
-
+	fftp_message(clientFd, 220, "FFTP");
 	while( (status = read(
 	clientFd,
 	buf,
@@ -83,6 +82,7 @@ void *fftp_handle_connection(void *arg)
 		if (IS_LOGGED(conn) &&
 		( command->operation == 0 || command->operation == 1 ))
 		{
+			fftp_message(clientFd, 530, "Already logged in.");
 			continue;
 		}
 
@@ -99,10 +99,7 @@ void *fftp_handle_connection(void *arg)
 				conn->username = strdup(arg);
 			}
 
-			dprintf(
-			clientFd,
-			"%d Waiting for password.\r\n",
-			331);
+			fftp_message(clientFd, 331, "Waiting for password.");
 			break;
 		}
 		case 1:
@@ -118,24 +115,18 @@ void *fftp_handle_connection(void *arg)
 				}
 				else
 				{
-					dprintf(
-					clientFd,
-					"%d Authentication successful.\r\n",
-					230);
+					fftp_message(clientFd, 230, "Authentication successful.");
 					break;
 				}
 			}
 
-			dprintf(
-			clientFd,
-			"%d Authentication failed.\r\n",
-			530);
+			fftp_message(clientFd, 530, "Authentication failed.");
 			break;
 		case 2:
-			dprintf(clientFd, "%d Goodbye!\r\n", 221);
+			fftp_message(clientFd, 221, "Goodbye!");
 			goto end;
 		default:
-			dprintf(clientFd, "%d No idea?\n", 500);
+			fftp_message(clientFd, 500, "No idea.");
 			break;
 		}
 	}
