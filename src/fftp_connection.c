@@ -57,6 +57,8 @@ void fftp_free_connection(struct Connection *conn)
 	fprintf(fLog, "[%d] Connection terminated\n", conn->clientFd);
 	fflush(fLog);
 
+	if (conn->username)
+		free(conn->username);
 	free(conn->clientAddr);
 	free(conn);
 }
@@ -68,7 +70,12 @@ void *fftp_handle_connection(void *arg)
 	int	status, clientFd = conn->clientFd;
 	char	buf[256], *end;
 
-	fftp_message(clientFd, 220, "FFTP");
+	fftp_message(
+	clientFd,
+	220,
+	".*] FFTP [*."
+	);
+
 	while( (status = read(
 	clientFd,
 	buf,
