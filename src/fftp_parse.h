@@ -1,7 +1,7 @@
 #ifndef _FFTP_PARSE_H
 #define _FFTP_PARSE_H
 
-#define NCMDS	2
+#define NCMDS	3
 
 #include <stdbool.h>
 

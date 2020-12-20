@@ -68,22 +68,22 @@ void *fftp_handle_connection(void *arg)
 	int	status, clientFd = conn->clientFd;
 	char	buf[256], *end;
 
-	dprintf(clientFd, ">> ");
+	dprintf(clientFd, "%d FFTP\r\n", 220);
 
 	while( (status = read(
 	clientFd,
 	buf,
 	sizeof buf)) > 0)
 	{
-		end = strchr(buf, '\n');
-		if (end != NULL) *end = 0;
+		end	= strchr(buf, '\r');
+		if (end != NULL)   *end = 0;
 
 		fftp_parse_command(buf, command);
 
 		if (IS_LOGGED(conn) &&
 		( command->operation == 0 || command->operation == 1 ))
 		{
-			goto resume;
+			continue;
 		}
 
 		switch (command->operation)
@@ -91,10 +91,6 @@ void *fftp_handle_connection(void *arg)
 		case 0:
 		{
 			char *arg = command->argument;
-			dprintf(
-			clientFd,
-			"USER issued with argument: %s\n",
-			arg);
 
 			if ( arg != NULL && strlen(arg))
 			{
@@ -102,13 +98,14 @@ void *fftp_handle_connection(void *arg)
 					free(conn->username);
 				conn->username = strdup(arg);
 			}
+
+			dprintf(
+			clientFd,
+			"%d Waiting for password.\r\n",
+			331);
 			break;
 		}
 		case 1:
-			dprintf(
-			clientFd,
-			"PASS issued with argument: %s\n",
-			command->argument);
 
 			if (conn->username != NULL && command->argument)
 			{
@@ -116,22 +113,34 @@ void *fftp_handle_connection(void *arg)
 				conn,
 				command->argument))
 				{
-				free(conn->username);
-				conn->username = NULL;
+					free(conn->username);
+					conn->username = NULL;
+				}
+				else
+				{
+					dprintf(
+					clientFd,
+					"%d Authentication successful.\r\n",
+					230);
+					break;
 				}
 			}
+
+			dprintf(
+			clientFd,
+			"%d Authentication failed.\r\n",
+			530);
 			break;
+		case 2:
+			dprintf(clientFd, "%d Goodbye!\r\n", 221);
+			goto end;
 		default:
-			dprintf(clientFd, "No idea?\n");
+			dprintf(clientFd, "%d No idea?\n", 500);
 			break;
 		}
-	resume:
-		if (IS_LOGGED(conn))
-			dprintf(clientFd, "(%d) >> ", conn->uid);
-		else
-			dprintf(clientFd, ">> ");
 	}
 
+end:
 	fftp_free_connection(conn);
 	free(command);
 	return NULL;

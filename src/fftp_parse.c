@@ -6,6 +6,7 @@ char commands[NCMDS + 1][6] =
 {
 	"USER",
 	"PASS",
+	"QUIT",
 	{ 0 }
 };
 
